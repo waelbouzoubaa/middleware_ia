@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Middleware IA • Sélection du modèle</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body class="page page-index">
+  <header class="topbar">
+    <h1>🧠 Middleware IA</h1>
+    <div class="spacer"></div>
+    <button id="btnSettings" class="ghost">⚙️ API</button>
+  </header>
+
+  <main class="container">
+    <p class="muted">Choisis un fournisseur / modèle pour démarrer une session de chat.</p>
+    <div id="modelsGrid" class="grid"></div>
+  </main>
+
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-card">
+      <h3>Configuration API</h3>
+      <label class="field">
+        <span>Base URL de l'API FastAPI</span>
+        <input id="apiBaseInput" type="text" placeholder="http://localhost:8000" />
+      </label>
+      <div class="row end gap">
+        <button id="btnCloseSettings" class="ghost">Annuler</button>
+        <button id="btnSaveSettings" class="primary">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
