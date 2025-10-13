@@ -3,8 +3,8 @@ from typing import List, Dict, Any
 from .base import BaseAdapter
 
 # Ecologits doit être initialisé avant usage des SDKs
-from ecologits import EcoLogits   # type: ignore
-EcoLogits.init()
+#from ecologits import EcoLogits   # type: ignore
+#EcoLogits.init()
 
 # SDK OpenAI (v1)
 from openai import OpenAI

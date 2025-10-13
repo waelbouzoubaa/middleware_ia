@@ -3,8 +3,8 @@ from typing import List, Dict, Any
 from .base import BaseAdapter
 
 # Ecologits (doit être init avant import/usage du SDK)
-from ecologits import EcoLogits   # type: ignore
-EcoLogits.init()
+#from ecologits import EcoLogits   # type: ignore
+#EcoLogits.init()
 
 # SDK Mistral
 from mistralai import Mistral

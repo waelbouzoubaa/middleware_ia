@@ -9,5 +9,5 @@ requests==2.32.3
 openai==1.32.0
 mistralai==0.4.0
 
-# Impacts (désactivé temporairement)
-ecologits[mistralai,openai]==0.1.9
+# Désactivation temporaire du module non compatible
+# ecologits[mistralai,openai]==0.1.9
