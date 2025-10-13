@@ -1,67 +1,60 @@
 import os
-import requests
+from typing import List, Dict, Any
 from .base import BaseAdapter
 
+# Ecologits (doit être init avant import/usage du SDK)
+from ecologits import EcoLogits   # type: ignore
+EcoLogits.init()
+
+# SDK Mistral
+from mistralai import Mistral
+
+
 class MistralAdapter(BaseAdapter):
-    """Adapter direct Mistral API (chat/completions, OpenAI-like)."""
+    """Adapter Mistral avec métriques d'impact via Ecologits."""
     def __init__(self, api_key: str | None = None):
         self.api_key = api_key or os.getenv("MISTRAL_API_KEY") or ""
-        self.url = "https://api.mistral.ai/v1/chat/completions"
-        # Alias simples -> IDs de modèles Mistral
-        self.model_map = {
-            "small": "mistral-small-latest",
-            "large": "mistral-large-latest",
-            "nemo": "open-mistral-nemo",
-            "mixtral": "open-mixtral-8x7b",
-        }
+        if not self.api_key:
+            raise RuntimeError("MISTRAL_API_KEY manquante")
+        self.client = Mistral(api_key=self.api_key)
 
-    def _resolve_model(self, model: str) -> str:
-        # model format: "mistral:<alias or full id>"
+    def send_chat(self, model: str, messages: List[Dict[str, Any]], stream: bool = False):
+        """
+        model attendu au format 'mistral:small' -> on enlève le prefixe 'mistral:'.
+        """
+        model_id = model.split(":", 1)[1] if ":" in model else model
+
+        # Mistral SDK – API chat
+        resp = self.client.chat.complete(
+            model=model_id,
+            messages=messages,
+        )
+
+        # Texte
+        content = ""
         try:
-            alias = model.split(":", 1)[1].strip()
+            content = resp.choices[0].message["content"].strip()
         except Exception:
-            alias = "small"
-        return self.model_map.get(alias, alias)
+            content = str(getattr(resp, "output_text", "")) or "(Mistral) Pas de contenu."
 
-    def send_chat(self, model: str, messages: list, stream: bool = False):
-        model_id = self._resolve_model(model)
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
+        # Usage tokens (dispo sur certaines versions du SDK)
+        input_tokens = getattr(getattr(resp, "usage", None), "prompt_tokens", 0)
+        output_tokens = getattr(getattr(resp, "usage", None), "completion_tokens", 0)
+        usage = {"input_tokens": input_tokens or 0, "output_tokens": output_tokens or 0}
+
+        # Impacts Ecologits
+        est_kwh = 0.0
+        est_co2e_g = 0.0
+        if hasattr(resp, "impacts") and resp.impacts:
+            if hasattr(resp.impacts, "energy") and resp.impacts.energy and hasattr(resp.impacts.energy, "value"):
+                est_kwh = float(resp.impacts.energy.value or 0.0)
+            if hasattr(resp.impacts, "gwp") and resp.impacts.gwp and hasattr(resp.impacts.gwp, "value"):
+                est_co2e_g = float(resp.impacts.gwp.value or 0.0) * 1000.0
+
+        return {
+            "content": content,
+            "usage": usage,
+            "cost_eur": 0.0,
+            "est_kwh": est_kwh,
+            "est_co2e_g": est_co2e_g,
         }
-        payload = {
-            "model": model_id,
-            "messages": messages,
-            "stream": False,
-        }
-        try:
-            resp = requests.post(self.url, headers=headers, json=payload, timeout=60)
-            if resp.status_code != 200:
-                return {
-                    "content": f"(Mistral) {resp.status_code} {resp.reason} — {resp.text[:300]}",
-                    "usage": {"input_tokens": 0, "output_tokens": 0},
-                    "cost_eur": 0.0,
-                    "est_kwh": 0.0,
-                    "est_co2e_g": 0.0,
-                }
-            data = resp.json()
-            # OpenAI-like response
-            content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-            usage = data.get("usage", {}) or {}
-            input_tokens = usage.get("prompt_tokens", 0)
-            output_tokens = usage.get("completion_tokens", 0)
-            return {
-                "content": content or str(data),
-                "usage": {"input_tokens": input_tokens, "output_tokens": output_tokens},
-                "cost_eur": 0.0,
-                "est_kwh": 0.0,
-                "est_co2e_g": 0.0,
-            }
-        except Exception as e:
-            return {
-                "content": f"(Mistral) Exception: {e}",
-                "usage": {"input_tokens": 0, "output_tokens": 0},
-                "cost_eur": 0.0,
-                "est_kwh": 0.0,
-                "est_co2e_g": 0.0,
-            }
