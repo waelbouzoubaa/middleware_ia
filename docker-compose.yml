@@ -2,7 +2,9 @@ version: "3.9"
 
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: middleware-backend
     ports:
       - "8010:8010"
@@ -11,12 +13,16 @@ services:
       - MISTRAL_API_KEY=${MISTRAL_API_KEY}
       - APP_ENV=${APP_ENV}
     restart: always
+    pull_policy: build
 
   frontend:
-    build: ./Frontend
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
     container_name: middleware-frontend
     ports:
       - "5173:80"
     restart: always
     depends_on:
       - backend
+    pull_policy: build

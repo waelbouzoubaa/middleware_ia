@@ -2,13 +2,11 @@ fastapi==0.110.0
 uvicorn[standard]==0.29.0
 python-dotenv==1.0.1
 pydantic==2.7.0
+requests==2.32.3
 
-# SDKs officiels
-openai>=1.40.0
-mistralai>=0.4.0
+# SDKs
+openai==1.43.0
+mistralai==0.4.2
 
-# Ecologits pour impacts (ajoute les hooks sur les SDKs)
-ecologits[mistralai,openai]>=0.2.0
-
-# (optionnel) requêtes bas niveau si besoin ailleurs
-requests>=2.31.0
+# Impacts
+ecologits[mistralai,openai]==0.2.0
