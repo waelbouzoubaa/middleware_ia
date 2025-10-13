@@ -6,8 +6,10 @@ services:
     container_name: middleware-backend
     ports:
       - "8010:8010"
-    env_file:
-      - ./backend/.env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - APP_ENV=${APP_ENV}
     restart: always
 
   frontend:
