@@ -1,6 +1,7 @@
 const qs = new URLSearchParams(location.search);
 const $ = (sel, root=document) => root.querySelector(sel);
-const API_BASE = (localStorage.getItem('API_BASE') || 'http://localhost:8010').replace(/\/$/, '');
+const API_BASE = (localStorage.getItem('API_BASE') || 'http://72.60.189.114:8010').replace(/\/$/, '');
+
 
 // Settings modal
 function openSettings(){ $('#settingsModal')?.classList.remove('hidden'); $('#apiBaseInput').value = API_BASE; }
