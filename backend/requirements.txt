@@ -5,8 +5,8 @@ pydantic==2.7.0
 requests==2.32.3
 
 # SDKs
-openai==1.43.0
-mistralai==0.4.2
+openai==1.32.0
+mistralai==0.4.0
 
-# Impacts
-ecologits[mistralai,openai]==0.2.0
+# Impacts Ecologits (version stable)
+ecologits[mistralai,openai]==0.1.9

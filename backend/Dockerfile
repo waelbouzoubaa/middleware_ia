@@ -1,18 +1,23 @@
-FROM python:3.11-slim
+# Image plus complète pour éviter les erreurs de build de wheels
+FROM python:3.11
 
-# Outils build + headers (certains wheels en ont besoin)
+# (facultatif mais utile) quelques outils réseau / git
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential gcc libffi-dev curl git \
-    && rm -rf /var/lib/apt/lists/*
+    git curl && rm -rf /var/lib/apt/lists/*
+
+# PIP: moins de verbosité, pas de cache, timeout augmenté
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DEFAULT_TIMEOUT=100 \
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Pimper pip et pré-installer les deps
+# 1) requirements d'abord pour bénéficier du cache Docker
 COPY requirements.txt /app/requirements.txt
-RUN python -m pip install --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --upgrade pip setuptools wheel \
+ && pip install --prefer-binary -r requirements.txt
 
-# Code
+# 2) puis le code
 COPY . /app
 
 EXPOSE 8010
