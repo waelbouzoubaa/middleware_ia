@@ -24,14 +24,25 @@ async function initIndex(){
   try{
     const models = await apiGet('/models');
     grid.innerHTML = '';
-    for(const m of models){
+    // Ne garder que ChatGPT & Mistral
+    const allowed = ['openai', 'mistral'];
+    const filtered = models.filter(m => allowed.includes(m.provider));
+    for(const m of filtered){
       const card = document.createElement('a');
       card.className = 'card';
       card.href = `./chat.html?model=${encodeURIComponent(m.model)}&label=${encodeURIComponent(m.label)}`;
-      card.innerHTML = `<div class="row"><div class="badge">${m.provider}</div><strong>${m.label}</strong></div><p class="muted small">ID: <code>${m.model}</code></p>`;
+      card.innerHTML = `
+        <div class="row">
+          <div class="badge">${m.provider === 'openai' ? 'ChatGPT' : 'Mistral'}</div>
+          <strong>${m.label}</strong>
+        </div>
+        <p class="muted small">Modèle ID: <code>${m.model}</code></p>
+      `;
       grid.appendChild(card);
     }
-  }catch(e){ grid.innerHTML = `<div class="card"><p>Erreur : <code>${e}</code></p></div>`; }
+  }catch(e){
+    grid.innerHTML = `<div class="card"><p>Erreur : <code>${e}</code></p></div>`;
+  }
 }
 
 // chat.html
