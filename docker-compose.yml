@@ -1,29 +1,28 @@
-# ──────────────────────────────
-# FRONTEND - Middleware IA
-# Serveur statique avec NGINX (correct MIME)
-# ──────────────────────────────
-FROM nginx:alpine
+version: "3.9"
 
-# Définir le répertoire racine des fichiers web
-WORKDIR /usr/share/nginx/html
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: middleware-backend
+    ports:
+      - "8010:8010"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - APP_ENV=${APP_ENV}
+    restart: always
+    pull_policy: build
 
-# Copier tous les fichiers du front
-COPY . .
-
-# Remplacer la configuration par défaut pour forcer le bon type MIME
-RUN rm /etc/nginx/conf.d/default.conf
-RUN echo 'server { \
-    listen 80; \
-    server_name localhost; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    include /etc/nginx/mime.types; \
-    default_type application/octet-stream; \
-    location / { try_files $uri $uri/ =404; } \
-}' > /etc/nginx/conf.d/default.conf
-
-# Expose le port 80 interne
-EXPOSE 80
-
-# Démarrer Nginx en mode foreground
-CMD ["nginx", "-g", "daemon off;"]
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: middleware-frontend
+    ports:
+      - "5173:80"
+    restart: always
+    depends_on:
+      - backend
+    pull_policy: build
