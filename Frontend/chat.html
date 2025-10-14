@@ -8,7 +8,7 @@
 </head>
 <body class="page page-chat">
   <header class="topbar">
-    <a class="ghost" href="./index.html">← Modèles</a>
+    <a class="ghost" href="./index.html">← Fournisseurs</a>
     <div class="row gap">
       <strong id="currentModelLabel">Modèle</strong>
       <span id="usageStats" class="badge muted"></span>
@@ -19,11 +19,16 @@
 
   <main class="chat-layout">
     <aside class="sidebar">
-      <h3>Modèles</h3>
-      <div id="modelsList" class="list"></div>
+      <h3>Modèles disponibles</h3>
+
+      <div class="model-select">
+        <label for="modelSelect">Choisir le modèle :</label>
+        <select id="modelSelect"></select>
+      </div>
+
       <hr />
       <div class="small muted">
-        <p>Coûts et empreinte viennent du backend dans <code>usage</code>, <code>cost_eur</code>, <code>est_kwh</code>, <code>est_co2e_g</code>.</p>
+        <p>Empreinte et coûts calculés côté backend.</p>
       </div>
     </aside>
 

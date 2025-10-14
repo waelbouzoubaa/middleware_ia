@@ -3,23 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Middleware IA • ChatGPT & Mistral</title>
+  <title>Middleware IA • Sélection du fournisseur</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body class="page page-index">
   <header class="topbar">
-    <h1>🧠 Middleware IA – ChatGPT & Mistral</h1>
+    <h1>🧠 Middleware IA</h1>
     <div class="spacer"></div>
     <button id="btnSettings" class="ghost">⚙️ API</button>
   </header>
 
-  <main class="container">
-    <p class="muted">
-      Sélectionne ton modèle IA pour démarrer une session de chat.
-      <br />
-      <strong>ChatGPT</strong> pour OpenAI • <strong>Mistral</strong> pour le modèle français open source.
-    </p>
-    <div id="modelsGrid" class="grid"></div>
+  <main class="container center">
+    <h2>Choisis ton fournisseur IA</h2>
+    <p class="muted small">Sélectionne le moteur que tu souhaites utiliser pour ta session de chat.</p>
+
+    <div class="providers">
+      <a href="./chat.html?provider=openai" class="provider-card openai">
+        <div class="icon">🧠</div>
+        <h3>OpenAI</h3>
+        <p>Modèles GPT (4o, 4-Turbo, 5)</p>
+      </a>
+
+      <a href="./chat.html?provider=mistral" class="provider-card mistral">
+        <div class="icon">🌀</div>
+        <h3>Mistral</h3>
+        <p>Modèles Mixtral, Small</p>
+      </a>
+    </div>
   </main>
 
   <div id="settingsModal" class="modal hidden">
