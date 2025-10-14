@@ -1,28 +1,29 @@
-version: "3.9"
+# ──────────────────────────────
+# FRONTEND - Middleware IA
+# Serveur statique avec NGINX (correct MIME)
+# ──────────────────────────────
+FROM nginx:alpine
 
-services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: middleware-backend
-    ports:
-      - "8010:8010"
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
-      - APP_ENV=${APP_ENV}
-    restart: always
-    pull_policy: build
+# Définir le répertoire racine des fichiers web
+WORKDIR /usr/share/nginx/html
 
-  frontend:
-    build:
-      context: ./Frontend
-      dockerfile: Dockerfile       # 👈 important : précise le Dockerfile du dossier Frontend
-    container_name: middleware-frontend
-    ports:
-      - "5173:80"                  # 5173 = port exposé publiquement / 80 = port interne du conteneur Nginx
-    restart: always
-    depends_on:
-      - backend
-    pull_policy: build
+# Copier tous les fichiers du front
+COPY . .
+
+# Remplacer la configuration par défaut pour forcer le bon type MIME
+RUN rm /etc/nginx/conf.d/default.conf
+RUN echo 'server { \
+    listen 80; \
+    server_name localhost; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    include /etc/nginx/mime.types; \
+    default_type application/octet-stream; \
+    location / { try_files $uri $uri/ =404; } \
+}' > /etc/nginx/conf.d/default.conf
+
+# Expose le port 80 interne
+EXPOSE 80
+
+# Démarrer Nginx en mode foreground
+CMD ["nginx", "-g", "daemon off;"]
