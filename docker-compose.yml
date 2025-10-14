@@ -18,9 +18,10 @@ services:
   frontend:
     build:
       context: ./Frontend
+      dockerfile: Dockerfile       # 👈 important : précise le Dockerfile du dossier Frontend
     container_name: middleware-frontend
     ports:
-      - "5173:80"
+      - "5173:80"                  # 5173 = port exposé publiquement / 80 = port interne du conteneur Nginx
     restart: always
     depends_on:
       - backend
