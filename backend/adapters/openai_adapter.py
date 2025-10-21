@@ -1,11 +1,12 @@
 import os
 from typing import List, Dict, Any
-from .base import BaseAdapter
 from openai import OpenAI
+from .base import BaseAdapter
+from adapters.carbon_adapter import estimate_carbon
 
 
 class OpenAIAdapter(BaseAdapter):
-    """Adapter OpenAI (stable, sans Ecologits)."""
+    """Adapter pour le fournisseur OpenAI (avec estimation carbone)."""
 
     def __init__(self, api_key: str | None = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY") or ""
@@ -14,32 +15,31 @@ class OpenAIAdapter(BaseAdapter):
         self.client = OpenAI(api_key=self.api_key)
 
     def send_chat(self, model: str, messages: List[Dict[str, Any]], stream: bool = False):
-        """
-        Appel du modèle OpenAI.
-        model attendu au format 'openai:gpt-4o-mini' -> 'gpt-4o-mini'.
-        """
+        """Envoie une requête de chat à l'API OpenAI."""
         model_id = model.split(":", 1)[1] if ":" in model else model
 
-        # Appel API
-        resp = self.client.chat.completions.create(
+        response = self.client.chat.completions.create(
             model=model_id,
             messages=messages,
             stream=False
         )
 
-        # Extraction du texte
+        # Contenu du message
         content = ""
-        if resp and resp.choices and resp.choices[0].message:
-            content = (resp.choices[0].message.content or "").strip()
+        if response and response.choices and response.choices[0].message:
+            content = (response.choices[0].message.content or "").strip()
 
-        # Retour minimal attendu
+        # Nombre de tokens utilisés
+        input_tokens = getattr(response.usage, "prompt_tokens", 0)
+        output_tokens = getattr(response.usage, "completion_tokens", 0)
+
+        # Calcul carbone
+        carbon_data = estimate_carbon(model, input_tokens, output_tokens)
+
         return {
             "content": content or "(OpenAI) Pas de contenu renvoyé.",
-            "usage": {
-                "input_tokens": getattr(resp.usage, "prompt_tokens", 0) if hasattr(resp, "usage") else 0,
-                "output_tokens": getattr(resp.usage, "completion_tokens", 0) if hasattr(resp, "usage") else 0,
-            },
+            "usage": {"input_tokens": input_tokens, "output_tokens": output_tokens},
             "cost_eur": 0.0,
-            "est_kwh": 0.0,
-            "est_co2e_g": 0.0,
+            "est_kwh": round(carbon_data["energy_kwh"], 6),
+            "est_co2e_g": round(carbon_data["carbon_gco2eq"], 3),
         }

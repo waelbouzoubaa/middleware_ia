@@ -1,52 +1,44 @@
 import os
 from typing import List, Dict, Any
+from mistralai import Mistral
 from .base import BaseAdapter
-from mistralai.client import MistralClient
+from adapters.carbon_adapter import estimate_carbon
 
 
 class MistralAdapter(BaseAdapter):
-   
+    """Adapter pour le fournisseur Mistral (avec calcul d'empreinte carbone)."""
 
     def __init__(self, api_key: str | None = None):
         self.api_key = api_key or os.getenv("MISTRAL_API_KEY") or ""
         if not self.api_key:
             raise RuntimeError("MISTRAL_API_KEY manquante")
-        self.client = MistralClient(api_key=self.api_key)
+        self.client = Mistral(api_key=self.api_key)
 
     def send_chat(self, model: str, messages: List[Dict[str, Any]], stream: bool = False):
-        """
-        Appel simple au modèle Mistral.
-        model attendu au format 'mistral:small' -> traduit en 'mistral-small'.
-        """
-        # Traduction du modèle
+        """Envoie une requête de chat à l'API Mistral."""
         model_id = model.split(":", 1)[1] if ":" in model else model
-        model_map = {
-            "small": "mistral-small",
-            "medium": "mistral-medium",
-            "large": "mistral-large"
-        }
-        model_id = model_map.get(model_id, model_id)
 
-        # Appel API
-        response = self.client.chat(model=model_id, messages=messages)
+        response = self.client.chat.complete(
+            model=model_id,
+            messages=messages
+        )
 
-        # Extraction du texte
+        # Récupération du contenu textuel
         content = ""
-        try:
-            if hasattr(response, "choices") and len(response.choices) > 0:
-                msg = response.choices[0].message
-                if isinstance(msg, dict):
-                    content = msg.get("content", "").strip()
-                else:
-                    content = getattr(msg, "content", "").strip()
-        except Exception as e:
-            content = f"(Mistral) Erreur de parsing: {e}"
+        if response and hasattr(response, "choices") and response.choices:
+            content = response.choices[0].message.content.strip()
 
-        # Retour minimal attendu par FastAPI
+        # Extraction du nombre de tokens
+        input_tokens = getattr(response.usage, "prompt_tokens", 0) if hasattr(response, "usage") else 0
+        output_tokens = getattr(response.usage, "completion_tokens", 0) if hasattr(response, "usage") else 0
+
+        # Calcul des émissions et de l'énergie
+        carbon_data = estimate_carbon(model, input_tokens, output_tokens)
+
         return {
             "content": content or "(Mistral) Pas de réponse.",
-            "usage": {"input_tokens": 0, "output_tokens": 0},
+            "usage": {"input_tokens": input_tokens, "output_tokens": output_tokens},
             "cost_eur": 0.0,
-            "est_kwh": 0.0,
-            "est_co2e_g": 0.0,
+            "est_kwh": round(carbon_data["energy_kwh"], 6),
+            "est_co2e_g": round(carbon_data["carbon_gco2eq"], 3),
         }

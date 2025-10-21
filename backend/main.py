@@ -9,6 +9,26 @@ from models import ChatRequest, ChatResponse, ModelInfo
 from adapters.mistral_adapter import MistralAdapter
 from adapters.openai_adapter import OpenAIAdapter
 
+
+#-----------------------------------------------------
+from ecologits import EcoLogits
+
+# ✅ Version compatible 0.8.2
+EcoLogits.init()  # patch automatique OpenAI + Mistral
+
+import logging
+
+# Configuration du logger pour EcoLogits
+logger = logging.getLogger("ecologits")
+logger.setLevel(logging.INFO)
+
+# fichier de log
+handler = logging.FileHandler("ecologits-traces.jsonl", mode="a", encoding="utf-8")
+handler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(handler)
+#-----------------------------------------------------
+
+
 # Charger les variables d'environnement
 dotenv_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=dotenv_path)
