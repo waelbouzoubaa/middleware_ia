@@ -14,7 +14,8 @@ from adapters.openai_adapter import OpenAIAdapter
 from ecologits import EcoLogits
 
 # ✅ Version compatible 0.8.2
-EcoLogits.init()  # patch automatique OpenAI + Mistral
+EcoLogits.init(providers=["openai"])  # on désactive Mistral
+
 
 import logging
 
