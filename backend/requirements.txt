@@ -8,3 +8,4 @@ requests==2.32.3
 # SDKs
 openai==1.32.0
 mistralai==0.4.0
+ecologits==0.8.2
