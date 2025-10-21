@@ -1,6 +1,7 @@
 const qs = new URLSearchParams(location.search);
 const $ = (sel, root=document) => root.querySelector(sel);
-const API_BASE = (localStorage.getItem('API_BASE') || 'http://127.0.0.1:8000').replace(/\/$/, '');
+const API_BASE = (localStorage.getItem('API_BASE') || 'http://72.60.189.114:8010').replace(/\/$/, '');
+
 
 
 // modal API
