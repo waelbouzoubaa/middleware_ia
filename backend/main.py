@@ -46,8 +46,16 @@ app.add_middleware(
 
 # Liste des modèles affichés dans ton frontend
 MODELS: List[ModelInfo] = [
-    ModelInfo(provider="openai", model="openai:gpt-4o-mini", label="ChatGPT (OpenAI)", enabled=True),
-    ModelInfo(provider="mistral", model="mistral:small", label="Mistral Small", enabled=True),
+    # --- OpenAI ---
+    ModelInfo(provider="openai", model="openai:gpt-4o-mini", label="GPT-4o-Mini", enabled=True),
+    ModelInfo(provider="openai", model="openai:gpt-4o", label="GPT-4o", enabled=True),
+    ModelInfo(provider="openai", model="openai:gpt-4-turbo", label="GPT-4-Turbo", enabled=True),
+    ModelInfo(provider="openai", model="openai:gpt-3.5-turbo", label="GPT-3.5-Turbo", enabled=True),
+    ModelInfo(provider="openai", model="openai:gpt-5", label="GPT-5 (bientôt disponible)", enabled=False),
+
+    # --- Mistral (open source uniquement) ---
+    ModelInfo(provider="mistral", model="mistral:open-mistral-7b", label="Mistral 7B (Open)", enabled=True),
+    ModelInfo(provider="mistral", model="mistral:open-mixtral-8x7b", label="Mixtral 8×7B (Open)", enabled=True),
 ]
 
 def pick_adapter(model_name: str):
@@ -73,8 +81,14 @@ def health_check():
 def get_models():
     return [m for m in MODELS if m.enabled]
 
+
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
+    # Vérifie si le modèle est désactivé
+    model_info = next((m for m in MODELS if m.model == request.model), None)
+    if model_info and not model_info.enabled:
+        raise HTTPException(status_code=400, detail=f"Le modèle '{model_info.label}' n’est pas encore disponible.")
+    
     adapter = pick_adapter(request.model)
-    result = adapter.send_chat(request.model, [m.dict() for m in request.messages])
+    result = adapter.send_chat(request.model, request.messages)
     return result

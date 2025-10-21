@@ -1,6 +1,7 @@
 const qs = new URLSearchParams(location.search);
 const $ = (sel, root=document) => root.querySelector(sel);
-const API_BASE = (localStorage.getItem('API_BASE') || 'http://72.60.189.114:8010').replace(/\/$/, '');
+const API_BASE = (localStorage.getItem('API_BASE') || 'http://127.0.0.1:8000').replace(/\/$/, '');
+
 
 // modal API
 function openSettings(){ $('#settingsModal')?.classList.remove('hidden'); $('#apiBaseInput').value = API_BASE; }
@@ -27,15 +28,19 @@ const state = {
 // modèles disponibles
 const MODELS = {
   openai: [
-    {id:'openai:gpt-5', label:'GPT-5'},
-    {id:'openai:gpt-4-turbo', label:'GPT-4-Turbo'},
-    {id:'openai:gpt-4o-mini', label:'GPT-4o-Mini'},
+    { id: 'openai:gpt-4o-mini', label: 'GPT-4o-Mini' },
+    { id: 'openai:gpt-4o', label: 'GPT-4o' },
+    { id: 'openai:gpt-4-turbo', label: 'GPT-4-Turbo' },
+    { id: 'openai:gpt-3.5-turbo', label: 'GPT-3.5-Turbo' },
+    { id: 'openai:gpt-5', label: 'GPT-5 (bientôt disponible)', disabled: true },
   ],
-  mistral: [
-    {id:'mistral:open-mixtral-8x7b', label:'Mixtral 8×7B'},
-    {id:'mistral:mistral-small', label:'Mistral Small'},
-  ]
+    mistral: [
+        { id: 'mistral:open-mixtral-8x7b', label: 'Mixtral 8×7B' },
+        { id: 'mistral:open-mistral-7b', label: 'Mistral 7B' },
+    ],
 };
+
+
 
 // initialise dropdown selon le provider
 function initModelSelect() {
