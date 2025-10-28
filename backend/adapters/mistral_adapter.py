@@ -1,9 +1,15 @@
 import os
 from typing import List, Dict, Any
 from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
+from pydantic import BaseModel  # ✅ on recrée la structure de message
 from .base import BaseAdapter
 from adapters.carbon_adapter import estimate_carbon
+
+
+# ✅ Recréation de la structure ChatMessage (équivalente à celle du SDK)
+class ChatMessage(BaseModel):
+    role: str
+    content: str
 
 
 class MistralAdapter(BaseAdapter):
