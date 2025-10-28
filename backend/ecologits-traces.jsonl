@@ -74,3 +74,10 @@ The model architecture has not been released, expect lower precision. For furthe
 The model architecture is multimodal, expect lower precision. For further information visit https://ecologits.ai/tutorial/warnings_and_errors/#model-arch-multimodal
 {"timestamp": "2025-10-28T13:49:14.828603", "model": "openai:gpt-4o", "input_tokens": 282, "output_tokens": 95, "energy_kwh": 0.0003968421052631579, "carbon_gco2eq": 0.1885}
 {"timestamp": "2025-10-28T13:49:29.318875", "model": "openai:gpt-4o-mini", "input_tokens": 8527, "output_tokens": 171, "energy_kwh": 0.01464926315789474, "carbon_gco2eq": 6.958400000000001}
+The model architecture has not been released, expect lower precision. For further information visit https://ecologits.ai/tutorial/warnings_and_errors/#model-arch-not-released
+The model architecture is multimodal, expect lower precision. For further information visit https://ecologits.ai/tutorial/warnings_and_errors/#model-arch-multimodal
+{"timestamp": "2025-10-28T13:59:46.907571", "model": "openai:gpt-4o-mini", "input_tokens": 8527, "output_tokens": 179, "energy_kwh": 0.014662736842105263, "carbon_gco2eq": 6.9648}
+{"timestamp": "2025-10-28T14:00:33.648810", "model": "openai:gpt-4o-mini", "input_tokens": 24, "output_tokens": 348, "energy_kwh": 0.0006265263157894738, "carbon_gco2eq": 0.29760000000000003}
+The model architecture has not been released, expect lower precision. For further information visit https://ecologits.ai/tutorial/warnings_and_errors/#model-arch-not-released
+The model architecture is multimodal, expect lower precision. For further information visit https://ecologits.ai/tutorial/warnings_and_errors/#model-arch-multimodal
+{"timestamp": "2025-10-28T14:06:47.364432", "model": "openai:gpt-4o-mini", "input_tokens": 9, "output_tokens": 10, "energy_kwh": 3.2e-05, "carbon_gco2eq": 0.0152}
