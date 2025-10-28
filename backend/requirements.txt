@@ -10,4 +10,5 @@ openai==1.32.0
 mistralai==0.4.0
 ecologits==0.8.2
 
-pillow==10.4.0
+python-multipart>=0.0.9
+pillow>=10.4.0
