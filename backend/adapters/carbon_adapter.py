@@ -9,6 +9,7 @@ MODEL_COEFFICIENTS = {
     "mistral:small": 0.3,
     "mistral:medium": 0.6,
     "mistral:large": 1.0,
+
 }
 
 LOG_PATH = Path(__file__).resolve().parent.parent / "ecologits-traces.jsonl"
