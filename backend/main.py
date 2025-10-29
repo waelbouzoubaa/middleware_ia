@@ -5,8 +5,10 @@ import base64
 from pathlib import Path
 from io import BytesIO
 from typing import List
+
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from PIL import Image
 
@@ -14,8 +16,9 @@ from models import ChatRequest, ChatResponse, ModelInfo
 from adapters.mistral_adapter import MistralAdapter
 from adapters.openai_adapter import OpenAIAdapter
 
-
-#-----------------------------------------------------
+# -----------------------------------------------------
+# 🌱 Tracking empreinte carbone
+# -----------------------------------------------------
 from ecologits import EcoLogits
 import logging
 
@@ -25,16 +28,16 @@ logger.setLevel(logging.INFO)
 handler = logging.FileHandler("ecologits-traces.jsonl", mode="a", encoding="utf-8")
 handler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(handler)
-#-----------------------------------------------------
 
-# Charger les variables d'environnement (.env)
+# -----------------------------------------------------
+# ⚙️ Configuration initiale
+# -----------------------------------------------------
 dotenv_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=dotenv_path)
 
-# Initialisation FastAPI
 app = FastAPI(title="Middleware IA - Multi-provider (OpenAI, Mistral, Gemini)")
 
-# Autoriser toutes les origines (CORS)
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -43,8 +46,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 📁 Répertoire d’upload
+UPLOAD_DIR = Path(__file__).parent / "uploads"
+UPLOAD_DIR.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 # -----------------------------------------------------
-# 📦 Liste des modèles supportés
+# 📦 Liste des modèles
 # -----------------------------------------------------
 MODELS: List[ModelInfo] = [
     # --- OpenAI ---
@@ -53,8 +61,6 @@ MODELS: List[ModelInfo] = [
     ModelInfo(provider="openai", model="openai:gpt-4-turbo", label="GPT-4-Turbo", enabled=True),
     ModelInfo(provider="openai", model="openai:gpt-3.5-turbo", label="GPT-3.5-Turbo", enabled=True),
     ModelInfo(provider="openai", model="openai:gpt-5", label="GPT-5 (bientôt disponible)", enabled=False),
-
-
 
     # --- Mistral ---
     ModelInfo(provider="mistral", model="mistral:open-mistral-7b", label="Mistral 7B (Open)", enabled=True),
@@ -71,8 +77,6 @@ def pick_adapter(model_name: str):
             raise HTTPException(status_code=500, detail="Clé API OpenAI absente du .env")
         return OpenAIAdapter(api_key)
 
-
-
     if model_name.startswith("mistral:"):
         api_key = os.getenv("MISTRAL_API_KEY")
         if not api_key:
@@ -80,7 +84,6 @@ def pick_adapter(model_name: str):
         return MistralAdapter(api_key)
 
     raise HTTPException(status_code=404, detail=f"Modèle '{model_name}' non reconnu.")
-
 
 # -----------------------------------------------------
 # 🌡️ Health Check & Liste des modèles
@@ -93,7 +96,6 @@ def health_check():
 def get_models():
     return [m for m in MODELS if m.enabled]
 
-
 # -----------------------------------------------------
 # 💬 Endpoint texte simple
 # -----------------------------------------------------
@@ -102,25 +104,51 @@ def chat(request: ChatRequest):
     model_info = next((m for m in MODELS if m.model == request.model), None)
     if model_info and not model_info.enabled:
         raise HTTPException(status_code=400, detail=f"Le modèle '{model_info.label}' n’est pas encore disponible.")
-
     adapter = pick_adapter(request.model)
     result = adapter.send_chat(request.model, request.messages)
     return result
 
-
 # -----------------------------------------------------
-# 📁 Endpoint universel : PDF + images (Vision)
+# 📤 Endpoint multiple upload (images / PDF)
 # -----------------------------------------------------
 @app.post("/chat/upload")
-async def chat_with_file(
+async def chat_upload(files: List[UploadFile] = File(...)):
+    """
+    Upload multiple de fichiers (images, PDF, etc.)
+    Retourne leurs métadonnées (filename, mime, url)
+    """
+    uploaded_files = []
+
+    for file in files:
+        try:
+            dest_path = UPLOAD_DIR / file.filename
+            with open(dest_path, "wb") as f:
+                f.write(await file.read())
+
+            uploaded_files.append({
+                "filename": file.filename,
+                "mime": file.content_type,
+                "url": f"/uploads/{file.filename}"
+            })
+        except Exception as e:
+            uploaded_files.append({
+                "filename": file.filename,
+                "error": str(e)
+            })
+
+    return {"files": uploaded_files}
+
+# -----------------------------------------------------
+# 🧠 Endpoint fichier + IA (vision / PDF)
+# -----------------------------------------------------
+@app.post("/chat/file-to-ai")
+async def chat_with_files(
     model: str = Form(...),
     messages: str = Form(...),
-    file: UploadFile | None = File(None),
+    files: List[UploadFile] = File(None)
 ):
     """
-    Envoi texte + fichier au modèle IA.
-    - PDF : extraction texte
-    - Images : encodage base64 (GPT-4o / Gemini Vision)
+    Combine plusieurs fichiers et envoie au modèle IA (Vision / PDF)
     """
     try:
         messages = json.loads(messages)
@@ -128,72 +156,49 @@ async def chat_with_file(
         raise HTTPException(status_code=400, detail="Format JSON invalide pour 'messages'.")
 
     adapter = pick_adapter(model)
-    file_path = None
-    extracted_text = None
-    image_b64 = None
-    suffix = ""
 
-    if file:
+    for file in files or []:
         suffix = Path(file.filename).suffix.lower()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-            tmp.write(await file.read())
-            file_path = tmp.name
+        temp_path = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+        temp_path.write(await file.read())
+        temp_path.close()
 
-        # --- Lecture PDF ---
         if suffix == ".pdf":
             try:
                 import fitz  # PyMuPDF
-                doc = fitz.open(file_path)
-                extracted_text = ""
-                for page in doc:
-                    extracted_text += page.get_text()
+                doc = fitz.open(temp_path.name)
+                text = "".join([page.get_text() for page in doc])
+                messages.append({
+                    "role": "user",
+                    "content": f"Texte extrait du fichier {file.filename} :\n{text[:6000]}..."
+                })
                 doc.close()
             except Exception as e:
-                extracted_text = f"[Erreur PDF: {str(e)}]"
+                messages.append({
+                    "role": "user",
+                    "content": f"[Erreur PDF: {str(e)}]"
+                })
 
-        # --- Image (jpg/png/jpeg) ---
-        elif suffix in [".png", ".jpg", ".jpeg"]:
+        elif suffix in [".jpg", ".jpeg", ".png"]:
             try:
-                img = Image.open(file_path)
-                buffered = BytesIO()
-                img.save(buffered, format="PNG")
-                image_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
+                img = Image.open(temp_path.name)
+                buf = BytesIO()
+                img.save(buf, format="PNG")
+                image_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+                messages.append({
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": f"Image '{file.filename}' envoyée :"},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_b64}"}}
+                    ]
+                })
             except Exception as e:
-                image_b64 = None
-                extracted_text = f"[Erreur lors du traitement de l'image : {str(e)}]"
+                messages.append({
+                    "role": "user",
+                    "content": f"[Erreur image {file.filename} : {str(e)}]"
+                })
 
-        else:
-            extracted_text = f"[Fichier {file.filename} reçu mais type non pris en charge]"
+        os.remove(temp_path.name)
 
-        # --- Injection dans les messages ---
-        if extracted_text:
-            messages.append({
-                "role": "user",
-                "content": f"L'utilisateur a envoyé un fichier '{file.filename}'. Voici son contenu :\n\n{extracted_text[:6000]}..."
-            })
-        elif image_b64:
-            # ✅ Structure multimodale correcte pour GPT-4o
-            messages.append({
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "Analyse cette image et décris ce qu’elle montre en détail."},
-                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_b64}"}}
-                ]
-            })
-        else:
-            messages.append({
-                "role": "user",
-                "content": f"L'utilisateur a envoyé un fichier '{file.filename}', mais aucun contenu n'a pu être traité."
-            })
-
-    # --- Envoi au modèle ---
     result = adapter.send_chat(model, messages)
-
-    # --- Nettoyage ---
-    if file_path:
-        try:
-            os.remove(file_path)
-        except Exception:
-            pass
-
     return result

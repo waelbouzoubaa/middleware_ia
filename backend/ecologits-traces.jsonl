@@ -81,3 +81,15 @@ The model architecture is multimodal, expect lower precision. For further inform
 The model architecture has not been released, expect lower precision. For further information visit https://ecologits.ai/tutorial/warnings_and_errors/#model-arch-not-released
 The model architecture is multimodal, expect lower precision. For further information visit https://ecologits.ai/tutorial/warnings_and_errors/#model-arch-multimodal
 {"timestamp": "2025-10-28T14:06:47.364432", "model": "openai:gpt-4o-mini", "input_tokens": 9, "output_tokens": 10, "energy_kwh": 3.2e-05, "carbon_gco2eq": 0.0152}
+{"timestamp": "2025-10-28T15:36:06.943787", "model": "openai:gpt-4o-mini", "input_tokens": 8527, "output_tokens": 184, "energy_kwh": 0.014671157894736844, "carbon_gco2eq": 6.968800000000001}
+{"timestamp": "2025-10-28T16:03:42.915899", "model": "openai:gpt-4o-mini", "input_tokens": 9, "output_tokens": 10, "energy_kwh": 3.2e-05, "carbon_gco2eq": 0.0152}
+The model architecture has not been released, expect lower precision. For further information visit https://ecologits.ai/tutorial/warnings_and_errors/#model-arch-not-released
+The model architecture is multimodal, expect lower precision. For further information visit https://ecologits.ai/tutorial/warnings_and_errors/#model-arch-multimodal
+{"timestamp": "2025-10-28T16:47:06.463138", "model": "openai:gpt-4o-mini", "input_tokens": 1397, "output_tokens": 831, "energy_kwh": 0.0037524210526315794, "carbon_gco2eq": 1.7824000000000002}
+{"timestamp": "2025-10-28T16:54:30.081693", "model": "openai:gpt-4o-mini", "input_tokens": 9, "output_tokens": 10, "energy_kwh": 3.2e-05, "carbon_gco2eq": 0.0152}
+{"timestamp": "2025-10-28T17:07:04.943352", "model": "openai:gpt-4o-mini", "input_tokens": 9, "output_tokens": 10, "energy_kwh": 3.2e-05, "carbon_gco2eq": 0.0152}
+{"timestamp": "2025-10-28T17:08:33.751317", "model": "openai:gpt-4o-mini", "input_tokens": 9, "output_tokens": 10, "energy_kwh": 3.2e-05, "carbon_gco2eq": 0.0152}
+{"timestamp": "2025-10-28T17:09:08.306940", "model": "openai:gpt-4o-mini", "input_tokens": 1597, "output_tokens": 464, "energy_kwh": 0.0034711578947368422, "carbon_gco2eq": 1.6488}
+{"timestamp": "2025-10-28T17:14:01.713533", "model": "openai:gpt-4o-mini", "input_tokens": 1538, "output_tokens": 654, "energy_kwh": 0.0036917894736842112, "carbon_gco2eq": 1.7536000000000003}
+{"timestamp": "2025-10-28T17:18:36.987678", "model": "openai:gpt-4o-mini", "input_tokens": 1390, "output_tokens": 819, "energy_kwh": 0.003720421052631579, "carbon_gco2eq": 1.7672}
+{"timestamp": "2025-10-28T17:25:31.263101", "model": "openai:gpt-4o-mini", "input_tokens": 1567, "output_tokens": 612, "energy_kwh": 0.003669894736842105, "carbon_gco2eq": 1.7431999999999999}

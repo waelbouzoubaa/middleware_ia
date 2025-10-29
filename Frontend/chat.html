@@ -1,65 +1,62 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Middleware IA • Chat</title>
-  <link rel="stylesheet" href="./style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Middleware IA – Chat</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="app.js"></script>
 </head>
-<body class="page page-chat">
+
+<body>
   <header class="topbar">
-    <a class="ghost" href="./index.html">← Fournisseurs</a>
-    <div class="row gap">
-      <strong id="currentModelLabel">Modèle</strong>
-      <span id="usageStats" class="badge muted"></span>
+    <a href="index.html" class="back-btn">← Retour</a>
+    <h1 id="currentModelLabel">GPT-4o-Mini</h1>
+    <div class="right-actions">
+      <button id="newChatBtn" class="btn-secondary">🆕 Nouveau chat</button>
+      <button id="apiConfigBtn" class="gear-btn">⚙️</button>
     </div>
-    <div class="spacer"></div>
-    <button id="btnSettings" class="ghost">⚙️ API</button>
   </header>
 
-  <main class="chat-layout">
+  <main class="chat-container">
     <aside class="sidebar">
-      <h3>Modèles disponibles</h3>
-
-      <div class="model-select">
-        <label for="modelSelect">Choisir le modèle :</label>
-        <select id="modelSelect"></select>
-      </div>
-
-
-      
+      <h2>Fournisseurs</h2>
+      <label for="modelSelect">Modèle :</label>
+      <select id="modelSelect"></select>
     </aside>
 
-    <section class="chat-panel">
+    <section class="chat-area">
       <div id="chatLog" class="chat-log"></div>
 
-      <form id="chatForm" class="composer">
-        <textarea id="chatInput" rows="2" placeholder="Écris ton message... (Shift+Entrée = retour ligne)"></textarea>
-        <div class="row gap">
-          <button id="btnClear" type="button" class="ghost">🗑️ Nouveau chat</button>
-          <div class="spacer"></div>
-          <button id="btnSend" class="primary">Envoyer</button>
-        </div>
-      </form>
+      <div id="attachments" class="attachments"></div>
+
+      <!-- Stats -->
+      <div id="usageStats" class="usage-stats hidden">
+        <span id="tokensPill" class="pill pill-tokens">🔹 0 tokens</span>
+        <span id="costPill" class="pill pill-cost">💰 0.00000 €</span>
+        <span id="co2Pill" class="pill pill-co2">🌍 0.00 gCO₂e</span>
+      </div>
+
+      <div class="chat-input-area">
+        <label for="fileUpload" class="upload-btn">📎</label>
+        <input type="file" id="fileUpload" multiple hidden />
+        <textarea id="chatInput" placeholder="Écris ton message... (Entrée = envoyer, Shift+Entrée = retour ligne)"></textarea>
+        <button id="sendBtn" class="send-btn">Envoyer</button>
+      </div>
     </section>
   </main>
 
-  <div id="settingsModal" class="modal hidden">
-    <div class="modal-card">
+  <!-- ⚙️ Configuration API -->
+  <div id="apiConfigModal" class="modal hidden">
+    <div class="modal-content">
       <h3>Configuration API</h3>
-      <label class="field">
-        <span>Base URL de l'API FastAPI</span>
-        <input id="apiBaseInput" type="text" placeholder="http://localhost:8010" />
-      </label>
-      <div class="row end gap">
-        <button id="btnCloseSettings" class="ghost">Annuler</button>
-        <button id="btnSaveSettings" class="primary">Enregistrer</button>
+      <label>Base URL de l'API FastAPI :</label>
+      <input type="text" id="apiBaseInput" placeholder="http://127.0.0.1:8010" />
+      <div class="modal-actions">
+        <button id="cancelApiConfig">Annuler</button>
+        <button id="saveApiConfig">Enregistrer</button>
       </div>
     </div>
   </div>
-
-  <!-- ✅ CDN Marked.js pour parser le Markdown -->
-  <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
-  <script src="./app.js"></script>
 </body>
 </html>
